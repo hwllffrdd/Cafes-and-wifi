@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cafes and Wifi</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #4b3832;
+            color: #f3e9d2;
+        }
+        .coffee-table {
+            background-color: #f8f1e4;
+            color: #4b3832;
+        }
+        .coffee-table th {
+            background-color: #d9b58d;
+        }
+        .coffee-table tbody tr:nth-child(odd) {
+            background-color: #f4e8d1;
+        }
+        .coffee-table tbody tr:hover {
+            background-color: #d7b899;
+        }
+        .coffee-link {
+            color: #8b4513;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12">
+
+      <h1>All Cafes</h1>
+      <table class="table coffee-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Map URL</th>
+            <th>Image URL</th>
+            <th>Location</th>
+            <th>Has Sockets</th>
+            <th>Has Toilet</th>
+            <th>Has WiFi</th>
+            <th>Can Take Calls</th>
+            <th>Seats</th>
+            <th>Coffee Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cafe in all_cafes %}
+            <tr>
+              <td>{{ cafe.name }}</td>
+              <td><a class="coffee-link" href="{{ cafe.map_url }}">Maps Link</a></td>
+              <td><a class="coffee-link" href="{{ cafe.img_url }}">Image Link</a></td>
+              <td>{{ cafe.location }}</td>
+              <td>{{ 'Yes' if cafe.has_sockets else 'No' }}</td>
+              <td>{{ 'Yes' if cafe.has_toilet else 'No' }}</td>
+              <td>{{ 'Yes' if cafe.has_wifi else 'No' }}</td>
+              <td>{{ 'Yes' if cafe.can_take_calls else 'No' }}</td>
+              <td>{{ cafe.seats }}</td>
+              <td>£{{ cafe.coffee_price }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

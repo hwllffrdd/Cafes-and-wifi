@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - Cafes and Wifi</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #4b3832;
+            color: #f3e9d2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mt-5">
+                <div class="card-header">
+                    <h1>Register</h1>
+                    <span>To add cafes, please register</span>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('register') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
