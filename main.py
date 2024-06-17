@@ -1,34 +1,15 @@
-from flask import Flask, abort, render_template, redirect, url_for, flash
+from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import  DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean, Float
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, SelectField, DecimalField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, URL, NumberRange, Email, EqualTo
-
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '86e0e42950d370e309153250ee03f9fadbcff62afc45ec7a'
-ckeditor = CKEditor(app)
-Bootstrap5(app)
-
-class Base(DeclarativeBase):
-    pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
-db = SQLAlchemy(model_class=Base)
-db.init_app(app)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-@login_manager.user_loader
-def load_user(user_id):
-    return db.get_or_404(User, user_id)
+from wtforms.validators import DataRequired, URL, NumberRange
 
 
 class AddCafeForm(FlaskForm):
@@ -73,6 +54,26 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Let Me In!")
 
 
+app = Flask(__name__)
+app.config['SECRET_KEY'] = '86e0e42950d370e309153250ee03f9fadbcff62afc45ec7a'
+ckeditor = CKEditor(app)
+Bootstrap5(app)
+
+
+class Base(DeclarativeBase):
+    pass
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
+db = SQLAlchemy(model_class=Base)
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
+
+
 class Cafe(db.Model):
     __tablename__ = "cafe"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -86,7 +87,6 @@ class Cafe(db.Model):
     can_take_calls: Mapped[bool] = mapped_column(Boolean, nullable=False)
     seats: Mapped[str] = mapped_column(String(250), nullable=True)
     coffee_price: Mapped[float] = mapped_column(Float, nullable=True)
-
 
 
 class User(UserMixin, db.Model):
@@ -105,11 +105,15 @@ with app.app_context():
 def register():
     register_form = RegisterForm()
     if register_form.validate_on_submit():
-        if User.query.filter_by(email=register_form.email.data).first():
+        new_email = register_form.email.data
+        result = db.session.execute(db.select(User).where(User.email == new_email))
+        existing_user = result.scalar()
+        if existing_user:
             flash("You've already signed up with that email, log in instead!")
             return redirect(url_for('login'))
 
         hashed_password = generate_password_hash(register_form.password.data, method='pbkdf2:sha256', salt_length=8)
+
         new_user = User(email=register_form.email.data, name=register_form.name.data, password=hashed_password)
 
         db.session.add(new_user)
@@ -117,6 +121,7 @@ def register():
         login_user(new_user)
         return redirect(url_for("cafes"))
     return render_template("register.html", form=register_form, current_user=current_user)
+
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -129,15 +134,16 @@ def login():
         if not registered_user:
             flash('That email does not exist in our database, please try again.')
             return redirect(url_for('login'))
+
         elif not check_password_hash(registered_user.password, logging_password):
             flash('Password incorrect, please try again.')
             return redirect(url_for('login'))
+
         else:
             login_user(registered_user)
             return redirect(url_for('cafes'))
 
     return render_template("login.html", form=login_form, current_user=current_user)
-
 
 
 @app.route('/logout')
@@ -172,7 +178,7 @@ def add_new_cafe():
         db.session.add(new_cafe)
         db.session.commit()
         return redirect(url_for("cafes"))
-    return render_template("add_cafe.html", form=form)
+    return render_template("add_cafe.html", form=form, current_user=current_user)
 
 
 def admin_only(f):
@@ -212,7 +218,7 @@ def edit_cafe(cafe_id):
         cafe.seats = edit_form.seats.data,
         cafe.coffee_price = edit_form.coffee_price.data
         db.session.commit()
-        return redirect(url_for("cafe"))
+        return redirect(url_for("cafes"))
     return render_template("add-cafe.html", form=edit_form, is_edit=True, current_user=current_user)
 
 
