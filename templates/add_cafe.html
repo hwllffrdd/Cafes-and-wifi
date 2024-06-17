@@ -23,8 +23,7 @@
                     <span>Provide details about the new cafe</span>
                 </div>
                 <div class="card-body">
-                    {{ ckeditor.load() }} {{ ckeditor.config(name='body') }} {{
-                    render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+                    {{render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
                 </div>
             </div>
         </div>

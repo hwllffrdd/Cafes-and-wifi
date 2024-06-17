@@ -1,6 +1,5 @@
 from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
-from flask_ckeditor import CKEditor
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -56,7 +55,6 @@ class LoginForm(FlaskForm):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '86e0e42950d370e309153250ee03f9fadbcff62afc45ec7a'
-ckeditor = CKEditor(app)
 Bootstrap5(app)
 
 
@@ -194,6 +192,8 @@ def admin_only(f):
 @admin_only
 def edit_cafe(cafe_id):
     cafe = db.get_or_404(Cafe, cafe_id)
+    if not cafe:
+        return "Cafe not found", 404
     edit_form = AddCafeForm(
         name=cafe.name,
         map_url=cafe.map_url,
@@ -207,15 +207,15 @@ def edit_cafe(cafe_id):
         coffee_price=cafe.coffee_price
     )
     if edit_form.validate_on_submit():
-        cafe.name = edit_form.name.data,
-        cafe.map_url = edit_form.map_url.data,
-        cafe.img_url = edit_form.img_url.data,
-        cafe.location = edit_form.location.data,
-        cafe.has_sockets = edit_form.has_sockets.data,
-        cafe.has_toilet = edit_form.has_toilets.data,
-        cafe.has_wifi = edit_form.has_wifi.data,
-        cafe.can_take_calls = edit_form.can_take_calls.data,
-        cafe.seats = edit_form.seats.data,
+        cafe.name = edit_form.name.data
+        cafe.map_url = edit_form.map_url.data
+        cafe.img_url = edit_form.img_url.data
+        cafe.location = edit_form.location.data
+        cafe.has_sockets = edit_form.has_sockets.data
+        cafe.has_toilet = edit_form.has_toilets.data
+        cafe.has_wifi = edit_form.has_wifi.data
+        cafe.can_take_calls = edit_form.can_take_calls.data
+        cafe.seats = edit_form.seats.data
         cafe.coffee_price = edit_form.coffee_price.data
         db.session.commit()
         return redirect(url_for("cafes"))
@@ -226,6 +226,8 @@ def edit_cafe(cafe_id):
 @admin_only
 def delete_cafe(cafe_id):
     cafe_to_delete = db.get_or_404(Cafe, cafe_id)
+    if not cafe_to_delete:
+        return "Cafe not found", 404
     db.session.delete(cafe_to_delete)
     db.session.commit()
     return redirect(url_for('cafes'))
